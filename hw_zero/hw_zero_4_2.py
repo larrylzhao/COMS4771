@@ -13,8 +13,8 @@ print L
 # (ii)
 R = [None]*500
 for i in range (0, 500):
-    x = random.uniform(0, 1)
-    y = random.uniform(0, 1)
+    x = np.random.normal(0, 1)
+    y = np.random.normal(0, 1)
     slope = y/x
     x = (1+slope**2)**(-.5)
     y = slope*x
@@ -42,8 +42,8 @@ for i in range (0, 500):
 
 # (vi)
 binSize = 50
-# n, bins, patches = plt.hist(Rlength, binSize, facecolor='blue', alpha=0.5)
-# plt.show()
+n, bins, patches = plt.hist(Rlength, binSize, facecolor='blue', alpha=0.5)
+plt.show()
 
 # (vii)
 
