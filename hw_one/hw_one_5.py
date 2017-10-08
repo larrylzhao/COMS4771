@@ -11,9 +11,9 @@ data = mat['X'].astype(int)
 labels = mat['Y'].astype(int)
 
 # calculate class priors
-classPriors = [0]*10
+classPriors = [0.0]*10
 for label in labels:
-    classPriors[label[0]] += 1
+    classPriors[label[0]] += 1.0
 
 
 # calculate conditionals for each digit
@@ -55,7 +55,7 @@ for digit in range(0, 10):
     #taking log to avoid overflow
     (sign, logdet) = np.linalg.slogdet(sigtemp + np.identity(784))
     logpi = 784 * 0.5 * np.log(2 * np.pi)
-    p = exp * -1 * (logpi + (sign * logdet))
+    p = (exp * -1 * (logpi + (sign * logdet))) * classPriors[digit] / 10000.0
 
     print exp, logdet, logpi, p
 
@@ -65,3 +65,4 @@ for digit in range(0, 10):
 
 print "actual: ", labels[1]
 print "guess: ", highestDigit
+
