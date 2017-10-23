@@ -28,10 +28,11 @@ def perceptron_v0(digit):
     return w
 
 def perceptron_v1(digit):
-    T = split*1
+    T = split*3
     w = [0]*784
     for t in range(1,T):
-        print t
+        if t % 1000 == 0:    
+            print t
         i = 0
         product = float("inf")
         for j in range(0,split):
@@ -52,6 +53,29 @@ def perceptron_v1(digit):
         else:
             break
     return w
+
+def perceptron_v2(digit):
+    T = split*5
+    w = [0]
+    w.append([0]*784)
+    c = [0, 0]
+    k = 1
+    for t in range(1,T):
+        if t % 1000 == 0:    
+            print t
+        i = (t % n + 1)
+        y = -1
+        if (labels[i] == digit):
+            y = 1
+        x = data[i]
+
+        if (y * (np.dot(w[k],x)) <= 0):
+            w.append(w[k] + y*x)
+            c.append(1)
+            k = k + 1
+        else:
+            c[k] = c[k] + 1
+    return w, c, k
 
 def test_p0():
     w = [0]*10
@@ -110,10 +134,47 @@ def test_p1():
 
         print correctcnt, wrongcnt
         # print w
+        
+def test_p2():
+    w = [0]*10
+    c = [0]*10
+    k = [0]*10
+    testSet = data[split:total]
+    for digit in range(10):
+        w[digit], c[digit], k[digit] = perceptron_v2(digit)
+
+
+    correctcnt = 0
+    wrongcnt = 0
+    for i in range(len(testSet)):
+        x = testSet[i]
+
+        guess = 0
+        for digit in range(10):
+            sum = 0.0
+            for j in range(1, k[digit]+1):
+                sign = -1
+                if (np.dot(w[digit][j], x) >= 0):
+                    sign = 1
+                sum = sum + c[digit][j] * sign
+            if (sum >= 0):
+                guess = digit
+
+        if guess == labels[i + split, 0]:
+            correctcnt += 1
+        else:
+            wrongcnt += 1
+
+        print "guess ", guess
+        print "actual ", labels[i + split, 0]
+
+        print correctcnt, wrongcnt
+        # print w
 
 
 def main():
-    # test_p0()
-    test_p1()
+    #test_p0()
+    #test_p1()
+    test_p2()
 
 main()
