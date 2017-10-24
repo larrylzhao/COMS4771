@@ -77,18 +77,23 @@ def perceptron_v2(digit):
             c[k] = c[k] + 1
     return w, c, k
 
-def kernel(degree, x1, x2):
+def kernel2(degree, x1, x2):
     for i in range(x1.size):
         x1[i] = x1[i] ** degree
         x2[i] = x2[i] ** degree
     return np.dot(x1, x2)
 
+def kernel(degree, x1, x2):
+    c = 0
+    return (np.dot(x1, x2) + c) ** degree
+
 
 def kernel_perceptron_v0(digit):
-    T = 10
+    T = split*1
     a = [0] * (n+1)
     for t in range(1,T):
-        print t
+        if t % 1000 == 0:
+            print t
         i = (t % n + 1)
         x = data[i]
         y = -1
@@ -210,13 +215,16 @@ def test_kp0():
     wrongcnt = 0
     for i in range(len(testSet)):
         x = testSet[i]
+        y = -1
+        if (labels[i + split] == digit):
+            y = 1
 
         guess = 0
         f = -1 * float("inf")
         for digit in range(10):
             sum = 0.0
-            for j in range(1, n):
-                sum = sum + a[j] * y * kernel(1, data[j], x)
+            for j in range(1, split):
+                sum = sum + a[digit][j] * y * kernel(1, data[j], x)
             if (sum >= f):
                 f = sum
                 guess = digit
