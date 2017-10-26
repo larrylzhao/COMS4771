@@ -1,7 +1,5 @@
 import scipy.io
-import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib.mlab as mlab
 
 
 np.set_printoptions(threshold='nan')
@@ -10,8 +8,8 @@ mat = scipy.io.loadmat('hw1data.mat')
 data = mat['X'].astype(np.float64)
 labels = mat['Y'].astype(int)
 
-split = 3000
-total = 4000
+split = 500
+total = 2000
 n = split
 
 def perceptron_v0(digit):
@@ -77,22 +75,17 @@ def perceptron_v2(digit):
             c[k] = c[k] + 1
     return w, c, k
 
-def kernel2(degree, x1, x2):
-    for i in range(x1.size):
-        x1[i] = x1[i] ** degree
-        x2[i] = x2[i] ** degree
-    return np.dot(x1, x2)
 
 def kernel(degree, x1, x2):
     c = 0
     return (np.dot(x1, x2) + c) ** degree
 
 
-def kernel_perceptron_v0(digit):
+def kernel_perceptron(digit):
     T = split*1
     a = [0] * (n+1)
     for t in range(1,T):
-        if t % 1000 == 0:
+        if t % 100 == 0:
             print t
         i = (t % n + 1)
         x = data[i]
@@ -101,7 +94,10 @@ def kernel_perceptron_v0(digit):
             y = 1
         sum = 0.0
         for j in range(1, n):
-            sum = sum + a[j] * y * kernel(1, data[j], x)
+            yj = -1
+            if (labels[j] == digit):
+                yj = 1
+            sum = sum + a[j] * yj * kernel(1, data[j], x)
         yguess = -1
         if sum >= 0:
             yguess = 1
@@ -204,11 +200,11 @@ def test_p2():
         print correctcnt, wrongcnt
         # print w
 
-def test_kp0():
+def test_kp():
     a = [0]*10
     testSet = data[split:total]
     for digit in range(10):
-        a[digit] = kernel_perceptron_v0(digit)
+        a[digit] = kernel_perceptron(digit)
 
 
     correctcnt = 0
@@ -224,7 +220,10 @@ def test_kp0():
         for digit in range(10):
             sum = 0.0
             for j in range(1, split):
-                sum = sum + a[digit][j] * y * kernel(1, data[j], x)
+                yj = -1
+                if (labels[j] == digit):
+                    yj = 1
+                sum = sum + a[digit][j] * yj * kernel(1, data[j], x)
             if (sum >= f):
                 f = sum
                 guess = digit
@@ -244,6 +243,6 @@ def main():
     #test_p0()
     #test_p1()
     #test_p2()
-    test_kp0()
+    test_kp()
 
 main()
