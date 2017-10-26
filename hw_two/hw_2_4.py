@@ -10,12 +10,12 @@ mat = scipy.io.loadmat('hw1data.mat')
 data = mat['X'].astype(np.float64)
 labels = mat['Y'].astype(int)
 
-split = 3000
-total = 4000
+split = 7000
+total = 10000
 n = split
 
 def perceptron_v0(digit):
-    T = split*1
+    T = split*20
     w = [0]*784
     for t in range(1,T):
         i = (t % n + 1)
@@ -28,7 +28,7 @@ def perceptron_v0(digit):
     return w
 
 def perceptron_v1(digit):
-    T = split*3
+    T = split*10
     w = [0]*784
     for t in range(1,T):
         if t % 1000 == 0:    
@@ -55,7 +55,7 @@ def perceptron_v1(digit):
     return w
 
 def perceptron_v2(digit):
-    T = split*5
+    T = split*20
     w = [0]
     w.append([0]*784)
     c = [0, 0]
@@ -101,7 +101,10 @@ def kernel_perceptron_v0(digit):
             y = 1
         sum = 0.0
         for j in range(1, n):
-            sum = sum + a[j] * y * kernel(1, data[j], x)
+            yj = -1
+            if (labels[j] == digit):
+                yj = 1
+            sum = sum + a[j] * yj * kernel(1, data[j], x)
         yguess = -1
         if sum >= 0:
             yguess = 1
@@ -215,16 +218,19 @@ def test_kp0():
     wrongcnt = 0
     for i in range(len(testSet)):
         x = testSet[i]
-        y = -1
-        if (labels[i + split] == digit):
-            y = 1
+        #y = -1
+        #if (labels[i + split] == digit):
+        #    y = 1
 
         guess = 0
         f = -1 * float("inf")
         for digit in range(10):
             sum = 0.0
             for j in range(1, split):
-                sum = sum + a[digit][j] * y * kernel(1, data[j], x)
+                yj = -1
+                if (labels[j] == digit):
+                    yj = 1
+                sum = sum + a[digit][j] * yj * kernel(1, data[j], x)
             if (sum >= f):
                 f = sum
                 guess = digit
