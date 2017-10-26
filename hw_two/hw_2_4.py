@@ -8,8 +8,9 @@ mat = scipy.io.loadmat('hw1data.mat')
 data = mat['X'].astype(np.float64)
 labels = mat['Y'].astype(int)
 
-split = 500
-total = 2000
+split = 3000
+total = 4000
+kdegree = 10
 n = split
 
 def perceptron_v0(digit):
@@ -82,10 +83,10 @@ def kernel(degree, x1, x2):
 
 
 def kernel_perceptron(digit):
-    T = split*1
+    T = split*3
     a = [0] * (n+1)
     for t in range(1,T):
-        if t % 100 == 0:
+        if t % 1000 == 0:
             print t
         i = (t % n + 1)
         x = data[i]
@@ -97,7 +98,7 @@ def kernel_perceptron(digit):
             yj = -1
             if (labels[j] == digit):
                 yj = 1
-            sum = sum + a[j] * yj * kernel(1, data[j], x)
+            sum = sum + a[j] * yj * kernel(kdegree, data[j], x)
         yguess = -1
         if sum >= 0:
             yguess = 1
@@ -223,7 +224,7 @@ def test_kp():
                 yj = -1
                 if (labels[j] == digit):
                     yj = 1
-                sum = sum + a[digit][j] * yj * kernel(1, data[j], x)
+                sum = sum + a[digit][j] * yj * kernel(kdegree, data[j], x)
             if (sum >= f):
                 f = sum
                 guess = digit
