@@ -6,15 +6,7 @@ import time
 import random
 
 data = scipy.io.loadmat('hw2data.mat')
-
-# print 'The X-matrix in hw2data.mat is:'
-# print data['X']
-# print data['X'].shape
 x = data['X']
-
-# print 'The Y-matrix in hw2data.mat is:'
-# print data['Y']
-# print data['Y'].shape
 y = data['Y']
 
 # Step
@@ -26,17 +18,10 @@ step = 0.0001
 # Input k is the size of the intermediate layer.
 def neural_network(x_array, y_array, k):
     # Initialize weights randomly.
-
     w1 = random.random()
     w2 = random.random()
     b1 = random.random()
     b2 = random.random()
-
-    print "starting params are: "
-    print '     ' + str(w1)
-    print '     ' + str(w2)
-    print '     ' + str(b1)
-    print '     ' + str(b2)
 
     while True:
         new_weights = neural_network_iterate(x_array, y_array, k, w1, w2, b1, b2)
@@ -49,34 +34,33 @@ def neural_network(x_array, y_array, k):
         print '     ' + str(w2)
         print '     ' + str(b1)
         print '     ' + str(b2)
-        # check for convergence
 
-
-
-# Train the neural network, iterating through all of the data once.
+# Train the neural network.
 #
-# Inputs x and y are vectors of size 1 ... n.
+# Inputs x_array and y_array are vectors of size 1 ... n.
 # Input k is the size of the intermediate layer.
 def neural_network_iterate(x_array, y_array, k, w1, w2, b1, b2):
 
-    for i in range(len(x_array)):
+    # Take k inputs at a time.
+    starting_indices = range(len(x_array) - k + 1)[0::k]
+    for i in starting_indices:
 
-        # Extract a single input and output.
-        x = x_array[i]
-        y = y_array[i]
+        # Extract k inputs and labels - convert into numpy arrays.
+        x = numpy.array(x_array[i:(i + k)]) # e.g. [3, 5, 7]
+        y = numpy.array(y_array[i:(i + k)]) # e.g. [4, 6, 8]
 
-        # Compute the network output y_hat given x and all four current weights.
-        # If y_hat and y have the same sign (correctly classified), then skip to
-        # the next data point.
-        y_hat = network_output(x, w1, b1, w2, b2)
-        # if (numpy.sign(y) == numpy.sign(y_hat)): continue
-        if (y == y_hat): continue
+        # Built network output [y_hat] given [x] and all four current weights.
+        y_hat = [network_output(xi, w1, b1, w2, b2) for xi in x]
 
         # Compute 4 gradients and use them to update 4 weight parameters
-        w1 = w1 - step * gradient_w1(x, y, w1, b1, w2, b2)
-        b1 = b1 - step * gradient_b1(x, y, w1, b1, w2, b2)
-        w2 = w2 - step * gradient_w2(x, y, w1, b1, w2, b2)
-        b2 = b2 - step * gradient_b2(x, y, w1, b1, w2, b2)
+        for j in range(len(x)):
+            w1 = w1 - step * gradient_w1(x[j], y[j], w1, b1, w2, b2)
+        for j in range(len(x)):
+            b1 = b1 - step * gradient_b1(x[j], y[j], w1, b1, w2, b2)
+        for j in range(len(x)):
+            w2 = w2 - step * gradient_w2(x[j], y[j], w1, b1, w2, b2)
+        for j in range(len(x)):
+            b2 = b2 - step * gradient_b2(x[j], y[j], w1, b1, w2, b2)
 
     return w1, w2, b1, b2
 
@@ -84,7 +68,8 @@ def neural_network_iterate(x_array, y_array, k, w1, w2, b1, b2):
 def expit(x, y, w1, b1, w2, b2):
     return (-1 * w2 / (math.exp(-1 * w1 * x - b1) + 1)) - b2
 
-# Compute the gradient with respect to w1 at the data point (x) with label (y).
+# For each of the k data points in x, compute the gradient with respect to w1.
+
 def gradient_w1(x, y, w1, b1, w2, b2):
     top_1 = 2 * w2 * x * math.exp(expit(x, y, w1, b1, w2, b2) - w1 * x - b1)
     top_2 = 1 / (math.exp(expit(x, y, w1, b1, w2, b2)) + 1) - y
@@ -125,14 +110,9 @@ def E_value(x, y, w1, b1, w2, b2):
 def network_output(x, w1, b1, w2, b2):
     return F_value(F_value(x, w1, b1), w2, b2)
 
-# params are:
-#      [ 0.55251848]
-#      [-1.86505591]
-#      [-1.66352657]
-#      [ 1.80538865]
+neural_network(x, y, 10)
 
-neural_network(x, y, 2)
-
+# Once converged, plot using the constants.
 matplotlib.pyplot.scatter(x, y, linewidths = 0, s = 3, c = 'b')
-matplotlib.pyplot.scatter(x, network_output(x, 0.5525, -1.8651, -1.6635, 1.8054), linewidths = 0, s = 3, c = 'r')
+matplotlib.pyplot.scatter(x, network_output(x, 0.61948176, -1.84151709, -2.04766945, 1.77857143), linewidths = 0, s = 3, c = 'r')
 matplotlib.pyplot.show()
