@@ -1,4 +1,5 @@
 # https://rare-technologies.com/word2vec-tutorial/
+# https://www.kdnuggets.com/2017/03/email-spam-filtering-an-implementation-with-python-and-scikit-learn.html
 
 # import modules & set up logging
 import os
