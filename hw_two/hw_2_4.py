@@ -1,7 +1,5 @@
 import scipy.io
-import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib.mlab as mlab
 
 
 np.set_printoptions(threshold='nan')
@@ -10,12 +8,13 @@ mat = scipy.io.loadmat('hw1data.mat')
 data = mat['X'].astype(np.float64)
 labels = mat['Y'].astype(int)
 
-split = 7000
-total = 10000
+split = 3000
+total = 4000
+kdegree = 10
 n = split
 
 def perceptron_v0(digit):
-    T = split*20
+    T = split*1
     w = [0]*784
     for t in range(1,T):
         i = (t % n + 1)
@@ -28,7 +27,7 @@ def perceptron_v0(digit):
     return w
 
 def perceptron_v1(digit):
-    T = split*10
+    T = split*3
     w = [0]*784
     for t in range(1,T):
         if t % 1000 == 0:    
@@ -55,7 +54,7 @@ def perceptron_v1(digit):
     return w
 
 def perceptron_v2(digit):
-    T = split*20
+    T = split*5
     w = [0]
     w.append([0]*784)
     c = [0, 0]
@@ -77,19 +76,14 @@ def perceptron_v2(digit):
             c[k] = c[k] + 1
     return w, c, k
 
-def kernel2(degree, x1, x2):
-    for i in range(x1.size):
-        x1[i] = x1[i] ** degree
-        x2[i] = x2[i] ** degree
-    return np.dot(x1, x2)
 
 def kernel(degree, x1, x2):
     c = 0
     return (np.dot(x1, x2) + c) ** degree
 
 
-def kernel_perceptron_v0(digit):
-    T = split*1
+def kernel_perceptron(digit):
+    T = split*3
     a = [0] * (n+1)
     for t in range(1,T):
         if t % 1000 == 0:
@@ -104,7 +98,7 @@ def kernel_perceptron_v0(digit):
             yj = -1
             if (labels[j] == digit):
                 yj = 1
-            sum = sum + a[j] * yj * kernel(1, data[j], x)
+            sum = sum + a[j] * yj * kernel(kdegree, data[j], x)
         yguess = -1
         if sum >= 0:
             yguess = 1
@@ -207,20 +201,20 @@ def test_p2():
         print correctcnt, wrongcnt
         # print w
 
-def test_kp0():
+def test_kp():
     a = [0]*10
     testSet = data[split:total]
     for digit in range(10):
-        a[digit] = kernel_perceptron_v0(digit)
+        a[digit] = kernel_perceptron(digit)
 
 
     correctcnt = 0
     wrongcnt = 0
     for i in range(len(testSet)):
         x = testSet[i]
-        #y = -1
-        #if (labels[i + split] == digit):
-        #    y = 1
+        y = -1
+        if (labels[i + split] == digit):
+            y = 1
 
         guess = 0
         f = -1 * float("inf")
@@ -230,7 +224,7 @@ def test_kp0():
                 yj = -1
                 if (labels[j] == digit):
                     yj = 1
-                sum = sum + a[digit][j] * yj * kernel(1, data[j], x)
+                sum = sum + a[digit][j] * yj * kernel(kdegree, data[j], x)
             if (sum >= f):
                 f = sum
                 guess = digit
@@ -250,6 +244,6 @@ def main():
     #test_p0()
     #test_p1()
     #test_p2()
-    test_kp0()
+    test_kp()
 
 main()
