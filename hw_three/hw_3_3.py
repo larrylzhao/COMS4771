@@ -10,19 +10,23 @@ import numpy as np
 from collections import Counter
 from sklearn.naive_bayes import MultinomialNB, GaussianNB, BernoulliNB
 from sklearn.svm import SVC, NuSVC, LinearSVC
+from sklearn.metrics import confusion_matrix
+
+# np.set_printoptions(threshold='nan')
 
 train_dir_ham = "train_data/ham"
 train_dir_spam = "train_data/spam"
 
 ham = [os.path.join(train_dir_ham,f) for f in os.listdir(train_dir_ham)]
-ham_holdout = ham[len(ham)-100:]
+ham_holdout = ham[len(ham)-100:len(ham)]
 ham = ham[0:len(ham)-100]
 
 spam = [os.path.join(train_dir_spam,f) for f in os.listdir(train_dir_spam)]
-spam_holdout = ham[len(spam)-100:]
+spam_holdout = ham[len(spam)-100:len(spam)]
 spam = ham[0:len(spam)-100]
 
 emails = ham + spam
+holdout = ham_holdout + spam_holdout
 
 def build_dictionary():
 
@@ -65,24 +69,24 @@ def dic_from_file():
         dictionary.append(entry)
     return dictionary
 
-def extract_features(dictionary):
+def extract_features(dictionary, files):
 
-    features_matrix = np.zeros((len(emails),3000))
+    features_matrix = np.zeros((len(files),3000))
     docID = 0
-    for j, email in enumerate(emails):
-        if j % 1000 == 1:
+    for j, file in enumerate(files):
+        if j % 100 == 0:
             print j
-        with open(email) as m:
-            for line in m:
-                words = line.split()
-                for word in words:
-                    word = stem(word.lower())
-                    wordID = 0
-                    for i,d in enumerate(dictionary):
-                        if d[0] == word:
-                            wordID = i
-                            features_matrix[docID,wordID] = words.count(word)
-            docID = docID + 1
+        f = open(file)
+        line = f.read()
+        words = line.split()
+        for word in words:
+            word = stem(word.lower())
+            wordID = 0
+            for i,d in enumerate(dictionary):
+                if d[0] == word:
+                    wordID = i
+                    features_matrix[docID,wordID] = words.count(word)
+        docID = docID + 1
     return features_matrix
 
 def main():
@@ -90,8 +94,10 @@ def main():
     print len(ham)
     print len(spam)
     print len(emails)
+    # print holdout
+    # print len(holdout)
     train_labels = np.zeros(len(emails))
-    train_labels[len(ham):len(emails)-1] = 1
+    train_labels[len(ham):len(emails)] = 1
 
     ### build dictionary and feature matrix from scratch ###
     # dictionary = build_dictionary()
@@ -100,33 +106,32 @@ def main():
     # print>>dicFile, dictionary
     # dicFile.close()
 
-    # features_matrix = extract_features(dictionary)
-    # print features_matrix
-    # np.savetxt('feature_matrix.txt', features_matrix, fmt='%f')
-
     ### load dictionary and feature matrix from file ###
-    features_matrix = np.loadtxt('feature_matrix.txt', dtype=float)
-    # print features_matrix
-
     dictionary = dic_from_file()
     # print dictionary
 
+    train_matrix = extract_features(dictionary, emails)
+    print train_matrix
+    np.savetxt('feature_matrix.txt', train_matrix, fmt='%f')
+
+    # train_matrix = np.loadtxt('feature_matrix.txt', dtype=float)
+    # print train_matrix
+
+    test_labels = np.zeros(200)
+    test_labels[100:200] = 1
+    test_matrix = extract_features(dictionary, holdout)
+
     # model1 = MultinomialNB()
     # model1.fit(train_matrix,train_labels)
+    # result1 = model1.predict(test_matrix)
+    # print confusion_matrix(test_labels,result1)
 
     model2 = LinearSVC()
     model2.fit(train_matrix,train_labels)
+    result2 = model2.predict(test_matrix)
+    print confusion_matrix(test_labels,result2)
+    print test_labels
+    print result2
 
 main()
 
-
-#
-# # Test the unseen mails for Spam
-# test_dir = 'test-mails'
-# test_matrix = extract_features(test_dir)
-# test_labels = np.zeros(260)
-# test_labels[130:260] = 1
-# result1 = model1.predict(test_matrix)
-# result2 = model2.predict(test_matrix)
-# print confusion_matrix(test_labels,result1)
-# print confusion_matrix(test_labels,result2)
