@@ -27,7 +27,6 @@ spam_holdout = spam[len(spam)-100:len(spam)]
 
 emails = ham + spam
 holdout = ham_holdout + spam_holdout
-dir,f) for f in os.listdir(train_dir)]
 
 def build_dictionary():
 
@@ -149,7 +148,6 @@ def main():
     # print confusion_matrix(test_labels,result2)
     # print test_labels
     # print result2
-
 
     test_matrix = extract_features(dictionary, files)
     model3 = MultinomialNB()
