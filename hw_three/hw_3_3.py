@@ -11,7 +11,7 @@ from collections import Counter
 from sklearn.naive_bayes import MultinomialNB, GaussianNB, BernoulliNB
 from sklearn.svm import SVC, NuSVC, LinearSVC
 from sklearn.metrics import confusion_matrix
-
+import re
 # np.set_printoptions(threshold='nan')
 
 train_dir_ham = "train_data/ham"
@@ -19,20 +19,21 @@ train_dir_spam = "train_data/spam"
 
 ham = [os.path.join(train_dir_ham,f) for f in os.listdir(train_dir_ham)]
 ham_holdout = ham[len(ham)-100:len(ham)]
-ham = ham[0:len(ham)-100]
+# ham = ham[0:len(ham)-100]
 
 spam = [os.path.join(train_dir_spam,f) for f in os.listdir(train_dir_spam)]
-spam_holdout = ham[len(spam)-100:len(spam)]
-spam = ham[0:len(spam)-100]
+spam_holdout = spam[len(spam)-100:len(spam)]
+# spam = spam[0:len(spam)-100]
 
 emails = ham + spam
 holdout = ham_holdout + spam_holdout
+dir,f) for f in os.listdir(train_dir)]
 
 def build_dictionary():
 
     all_words = []
     for i, email in enumerate(emails):
-        if i % 1000 == 1:
+        if i % 100 == 0:
             print i
         with open(email) as m:
             for line in m:
@@ -89,7 +90,25 @@ def extract_features(dictionary, files):
         docID = docID + 1
     return features_matrix
 
+def tryint(s):
+    try:
+        return int(s)
+    except:
+        return s
+
+def alphanum_key(s):
+    """ Turn a string into a list of string and number chunks.
+        "z23a" -> ["z", 23, "a"]
+    """
+    return [ tryint(c) for c in re.split('([0-9]+)', s) ]
+
 def main():
+
+    test_dir = 'test_data'
+    files = [os.path.join(test_dir,fi) for fi in os.listdir(test_dir)]
+    files.sort(key=alphanum_key)
+
+    print files
 
     print len(ham)
     print len(spam)
@@ -100,38 +119,59 @@ def main():
     train_labels[len(ham):len(emails)] = 1
 
     ### build dictionary and feature matrix from scratch ###
-    # dictionary = build_dictionary()
-    # print dictionary
-    # dicFile = open('dictionary.txt', 'w')
-    # print>>dicFile, dictionary
-    # dicFile.close()
-
-    ### load dictionary and feature matrix from file ###
-    dictionary = dic_from_file()
-    # print dictionary
-
+    dictionary = build_dictionary()
+    dicFile = open('dictionary.txt', 'w')
+    print>>dicFile, dictionary
+    dicFile.close()
     train_matrix = extract_features(dictionary, emails)
     print train_matrix
     np.savetxt('feature_matrix.txt', train_matrix, fmt='%f')
 
-    # train_matrix = np.loadtxt('feature_matrix.txt', dtype=float)
-    # print train_matrix
 
-    test_labels = np.zeros(200)
-    test_labels[100:200] = 1
-    test_matrix = extract_features(dictionary, holdout)
+    ### load dictionary and feature matrix from file ###
+    dictionary = dic_from_file()
+    train_matrix = np.loadtxt('feature_matrix.txt', dtype=float)
 
+
+    ### hold out set test ###
+    # test_labels = np.zeros(200)
+    # test_labels[100:200] = 1
+    # test_matrix = extract_features(dictionary, holdout)
+    #
     # model1 = MultinomialNB()
     # model1.fit(train_matrix,train_labels)
     # result1 = model1.predict(test_matrix)
     # print confusion_matrix(test_labels,result1)
+    #
+    # model2 = LinearSVC()
+    # model2.fit(train_matrix,train_labels)
+    # result2 = model2.predict(test_matrix)
+    # print confusion_matrix(test_labels,result2)
+    # print test_labels
+    # print result2
 
-    model2 = LinearSVC()
-    model2.fit(train_matrix,train_labels)
-    result2 = model2.predict(test_matrix)
-    print confusion_matrix(test_labels,result2)
-    print test_labels
-    print result2
+
+    test_matrix = extract_features(dictionary, files)
+    model3 = MultinomialNB()
+    model3.fit(train_matrix,train_labels)
+    result3 = model3.predict(test_matrix)
+    model4 = LinearSVC()
+    model4.fit(train_matrix,train_labels)
+    result4 = model4.predict(test_matrix)
+
+    outFile = open('results.csv', 'w')
+    print>>outFile, "email_id,labels"
+    for i, label in enumerate(result3):
+        email_id = str(i+1)
+        label = str(int(label))
+        print >> outFile, email_id + "," + label
+
+    outFile = open('results2.csv', 'w')
+    print>>outFile, "email_id,labels"
+    for i, label in enumerate(result4):
+        email_id = str(i+1)
+        label = str(int(label))
+        print >> outFile, email_id + "," + label
 
 main()
 
